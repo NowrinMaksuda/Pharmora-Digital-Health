@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/checkout.css') }}">
+
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+    <div class="container">
+        <div class="header-container">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                <span>MediHome</span>
+            </div>
+            <nav>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                    <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                    <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('services') }}">Services</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <div class="cart-icon">
+                    <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">{{ cart_items|length }}</span>
+                    </a>
+                </div>
+                <div class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </div>
+                
+            </div>
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Checkout Page Content -->
+    <main class="checkout-page">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Checkout</h1>
+                <p class="page-subtitle">Complete your order in just a few simple steps</p>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="progress-indicator">
+                <div class="progress-step active">
+                    <div class="step-circle">1</div>
+                    <div class="step-title">Cart</div>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-circle">2</div>
+                    <div class="step-title">Details</div>
+                </div>
+                <div class="progress-step active">
+                    <div class="step-circle">3</div>
+                    <div class="step-title">Payment</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-circle">4</div>
+                    <div class="step-title">Complete</div>
+                </div>
+            </div>
+
+            <div class="checkout-container">
+                <!-- Left Column -->
+                <div>
+                    <!-- Delivery Information Form -->
+                    <div class="delivery-form">
+                        <h2 class="section-title">Delivery Information</h2>
+                        <form id="checkoutForm" action="{{ url_for('place_order') }}" method="post">
+                            <!-- Hidden fields for each item -->
+                            {% for item in cart_items %}
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="hidden" name="item_name" value="{{ item.name }}">
+                            <input type="hidden" name="item_price" value="{{ item.price }}">
+                            <input type="hidden" name="item_quantity" value="{{ item.quantity }}">
+                            {% endfor %}
+                            <input type="hidden" name="source" value="{{ source }}">
+                            {% if applied_promo %}
+                            <input type="hidden" name="promo_code_id" value="{{ applied_promo.id }}">
+                            {% endif %}
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" id="firstName" name="firstName" class="form-input"
+                                        value="{{ user.name.split(' ')[0] if user.name else '' }}"
+                                        placeholder="Enter your first name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" id="lastName" name="lastName" class="form-input"
+                                        value="{{ user.name.split(' ')[1] if user.name and ' ' in user.name else '' }}"
+                                        placeholder="Enter your last name" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" id="email" name="email" class="form-input"
+                                    value="{{ user.email or '' }}" placeholder="Enter your email address" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" class="form-input"
+                                    value="{{ user.phone or '' }}" placeholder="Enter your phone number" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" id="address" name="address" class="form-input"
+                                    value="{{ user.address or '' }}" placeholder="Enter your full address" required>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="city" class="form-label">City</label>
+                                    <input type="text" id="city" name="city" class="form-input"
+                                        placeholder="Enter your city" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="postalCode" class="form-label">Postal Code</label>
+                                    <input type="text" id="postalCode" name="postalCode" class="form-input"
+                                        placeholder="Enter your postal code" required>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="instructions" class="form-label">Special Instructions (Optional)</label>
+                                <textarea id="instructions" name="instructions" class="form-textarea"
+                                    placeholder="Any special delivery instructions"></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Delivery Options -->
+                    <div class="delivery-form">
+                        <h2 class="section-title">Delivery Options</h2>
+                        <div class="delivery-options">
+                            {% for option, price in delivery_options.items() %}
+                            <div class="delivery-option {% if option == 'standard' %}selected{% endif %}"
+                                data-delivery="{{ option }}" data-price="{{ price }}">
+                                <input type="radio" name="deliveryOption" class="delivery-radio" value="{{ option }}" {%
+                                    if option=='standard' %}checked{% endif %}>
+                                <div class="delivery-info">
+                                    <div class="delivery-name">{{ option|title }} Delivery</div>
+                                    <div class="delivery-price">{% if price == 0 %}Free{% else %}৳{{ price }}{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <h2 class="section-title">Payment Method</h2>
+                        <div class="payment-options">
+                            <div class="payment-option" data-payment="cod">
+                                <input type="radio" name="paymentMethod" class="payment-radio" id="cash-on-delivery"
+                                    value="cod" checked>
+                                <i class="fas fa-money-bill-wave payment-icon"></i>
+                                <div class="payment-info">
+                                    <div class="payment-name">Cash on Delivery</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <!-- Order Summary Card -->
+                    <div class="order-summary">
+                        <h2 class="section-title">Order Summary</h2>
+                        <div class="order-items">
+                            {% for item in cart_items %}
+                            <div class="order-item">
+                                <div class="order-item-name">{{ item.name }} × {{ item.quantity }}</div>
+                                <div class="order-item-price">৳{{ "%.2f"|format((item.price * item.quantity)|float) }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="order-breakdown">
+                            <div class="order-row">
+                                <div>Subtotal</div>
+                                <div id="order-subtotal">৳{{ "%.2f"|format(subtotal|float) }}</div>
+                            </div>
+                            <div class="order-row">
+                                <div>Delivery</div>
+                                <div id="order-delivery">৳{{ "%.2f"|format(delivery_fee|float) }}</div>
+                            </div>
+                            <div class="order-row">
+                                <div>Tax (5%)</div>
+                                <div id="order-tax">৳{{ "%.2f"|format(tax|float) }}</div>
+                            </div>
+                            {% if discount > 0 %}
+                            <div class="order-row discount-row">
+                                <div>Discount</div>
+                                <div id="order-discount-amount">-৳{{ "%.2f"|format(discount|float) }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="order-row total">
+                                <div>Total</div>
+                                <div id="order-total">৳{{ "%.2f"|format(total|float) }}</div>
+                            </div>
+                        </div>
+                        <div class="promo-code">
+                            <form method="post" action="{{ url_for('checkout') }}" class="promo-form">
+                                <input type="text" name="promo_code" class="promo-input" id="promoInput"
+                                    placeholder="Enter promo code" value="{{ request.form.get('promo_code', '') }}">
+                                <button type="submit" class="promo-button" id="applyPromo">Apply</button>
+                            </form>
+                        </div>
+                        <button type="submit" form="checkoutForm" class="place-order-btn" id="placeOrderBtn">Place
+                            Order</button>
+                        <div class="security-features">
+                            <div class="security-feature">
+                                <i class="fas fa-lock security-icon"></i>
+                                <span>Secure Payment</span>
+                            </div>
+                            <div class="security-feature">
+                                <i class="fas fa-shield-alt security-icon"></i>
+                                <span>SSL Encryption</span>
+                            </div>
+                            <div class="security-feature">
+                                <i class="fas fa-user-shield security-icon"></i>
+                                <span>Privacy Protection</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="Your email address">
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Medicine Delivery</a></li>
+                        <li><a href="#">Health Consultation</a></li>
+                        <li><a href="#">Prescription Upload</a></li>
+                        <li><a href="#">Lab Tests</a></li>
+                        <li><a href="#">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Handle delivery option selection
+        document.addEventListener('DOMContentLoaded', function () {
+            const deliveryOptions = document.querySelectorAll('.delivery-option');
+            const deliveryChargeElement = document.getElementById('order-delivery');
+            const totalAmountElement = document.getElementById('order-total');
+            const taxAmountElement = document.getElementById('order-tax');
+            const subtotalElement = document.getElementById('order-subtotal');
+
+            // Get initial values
+            const subtotal = parseFloat("{{ subtotal|float }}");
+            const discount = parseFloat("{{ discount|float }}");
+            const taxRate = 0.05;
+
+            deliveryOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    // Remove selected class from all options
+                    deliveryOptions.forEach(opt => opt.classList.remove('selected'));
+
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+
+                    // Check the radio button
+                    const radio = this.querySelector('.delivery-radio');
+                    radio.checked = true;
+
+                    // Get the delivery price
+                    const deliveryPrice = parseFloat(this.getAttribute('data-price'));
+
+                    // Calculate tax and total
+                    const tax = subtotal * taxRate;
+                    const total = subtotal + deliveryPrice + tax - discount;
+
+                    // Update the UI
+                    deliveryChargeElement.textContent = `৳${deliveryPrice.toFixed(2)}`;
+                    taxAmountElement.textContent = `৳${tax.toFixed(2)}`;
+                    totalAmountElement.textContent = `৳${total.toFixed(2)}`;
+                });
+            });
+
+            // Handle promo code form submission
+            const promoForm = document.querySelector('.promo-form');
+            if (promoForm) {
+                promoForm.addEventListener('submit', function (e) {
+                    const promoInput = document.getElementById('promoInput');
+                    if (!promoInput.value.trim()) {
+                        e.preventDefault();
+                        showToast('Please enter a promo code');
+                    }
+                });
+            }
+        });
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast toast-' + type;
+            toast.style.display = 'block';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+
+    <script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+</body>
+
+</html>

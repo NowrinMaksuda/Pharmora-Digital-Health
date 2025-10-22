@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <title>MediHome - Your Trusted Healthcare Partner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <style>
+        /* Category Filter Styles */
+        .filter-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .filter-section h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .filter-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-option {
+            padding: 8px 15px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-option:hover {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .filter-option.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" class="logo-img"
+                        style="height: 50px; width: auto; margin-right: 10px;">
+                    <span>MediHome</span>
+                </div>
+                <nav>
+                    <ul class="nav-links" id="navLinks">
+                        <li><a href="{{ url_for('index') }}" class="active">Home</a></li>
+                        <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">{{ cart_count }}</span>
+                        </a>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    {% if user %}
+                    <div class="user-dropdown">
+                        <img src="{{ user.image or 'https://picsum.photos/seed/user123/40/40.jpg' }}" alt="User Profile"
+                            class="user-profile" id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{{ url_for('dashboard') }}">Profile</a>
+                            <a href="{{ url_for('logout') }}">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="user-dropdown">
+                        <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User Profile" class="user-profile"
+                            id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="" id="loginBtn">Login</a>
+                            <a href="#" id="signupBtn">Signup</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+                 <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+        
+    
+                    <h1>Your Trusted Healthcare Partner</h1>
+                    <p>Find all your medical needs at one place. Quality medicines, expert advice, and fast delivery.
+                    </p>
+                    <a href="{{ url_for('medicines') }}" class="btn">Shop Now</a>
+                </div>
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1584362917165-526a968579e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                        alt="Medicine">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_users }}+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_medicines }}+</div>
+                    <div class="stat-label">Products Available</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_orders }}+</div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ total_prescriptions }}+</div>
+                    <div class="stat-label">Prescriptions Uploaded</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Top Selling Products Section -->
+    <section class="products-section" id="medicine">
+        <div class="container">
+            <h2 class="section-title">Top Selling Products</h2>
+            <div class="products-container">
+                {% for product in top_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        <i class="fas fa-tablets"></i>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <div class="product-price">৳{{ product.price }}</div>
+                        <span
+                            class="product-status {% if product.stock_quantity > 10 %}in-stock{% elif product.stock_quantity > 0 %}low-stock{% else %}out-of-stock{% endif %}">
+                            {% if product.stock_quantity > 10 %}In Stock{% elif product.stock_quantity > 0 %}Low Stock{%
+                            else %}Out of Stock{% endif %}
+                        </span>
+                        <div class="product-actions">
+                            <a href="{{ url_for('medicine_details', medicine_id=product.id) }}"
+                                class="view-details">View Details</a>
+                            <form action="{{ url_for('add_to_cart') }}" method="post">
+                                <input type="hidden" name="medicine_id" value="{{ product.id }}">
+                                <button type="submit" class="add-to-cart" {% if product.stock_quantity==0 %}disabled{%
+                                    endif %}>Add to Cart</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="view-more">
+                <a href="{{ url_for('medicines') }}">View More Products</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Why Choose Us Section -->
+    <section class="why-choose-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose Us</h2>
+            <div class="features-container">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h3 class="feature-title">Fast Delivery</h3>
+                    <p class="feature-description">Get your medicines delivered to your doorstep within 24 hours.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">100% Genuine</h3>
+                    <p class="feature-description">All our products are sourced directly from manufacturers and
+                        authorized distributors.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3 class="feature-title">Expert Advice</h3>
+                    <p class="feature-description">Our team of pharmacists are available to provide you with expert
+                        advice.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h3 class="feature-title">Best Prices</h3>
+                    <p class="feature-description">We offer competitive prices and regular discounts on all our
+                        products.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h3 class="feature-title">Secure Payment</h3>
+                    <p class="feature-description">Your payment information is secure with our encrypted payment
+                        gateway.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <h3 class="feature-title">Easy Returns</h3>
+                    <p class="feature-description">Not satisfied with your purchase? Return it within 7 days for a full
+                        refund.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Reviews Section -->
+    <section class="reviews-section">
+        <div class="container">
+            <h2 class="section-title">Customer Reviews</h2>
+            <div class="reviews-container">
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <img src="{{ review.user_image or 'https://picsum.photos/seed/customer' ~ review.id ~ '/60/60.jpg' }}"
+                            alt="Customer" class="reviewer-image">
+                        <div class="reviewer-info">
+                            <h4>{{ review.name }}</h4>
+                            <div class="review-date">{{ review.review_date.strftime('%d %B %Y') }}</div>
+                        </div>
+                    </div>
+                    <div class="review-rating">
+                        {% for i in range(1, 6) %}
+                        {% if i <= review.ratings %} <i class="fas fa-star"></i>
+                            {% else %}
+                            <i class="far fa-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                    </div>
+                    <p class="review-text">{{ review.quote }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="Your email address">
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicine_delivery') }}">Medicine Delivery</a></li>
+                        <li><a href="{{ url_for('health_consultation') }}">Health Consultation</a></li>
+                        <li><a href="{{ url_for('prescription_upload') }}">Prescription Upload</a></li>
+                        <li><a href="{{ url_for('lab_tests') }}">Lab Tests</a></li>
+                        <li><a href="{{ url_for('healthcare_products') }}">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        {% for category in categories[:5] %}
+                        <li><a href="{{ url_for('medicines', category=category.category) }}">{{
+                                category.category }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="modal-close" id="loginModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Login to MediHome</h2>
+            <form action="{{ url_for('login') }}" method="post">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" class="form-control" placeholder="Enter your email"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" class="form-control"
+                        placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="form-submit">Login</button>
+                <div class="form-switch">
+                    Don't have an account? <a href="#" id="switchToSignup">Signup</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <span class="modal-close" id="signupModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Create an Account</h2>
+            <form action="{{ url_for('signup') }}" method="post">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="name" class="form-control"
+                        placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="email" class="form-control"
+                        placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone</label>
+                    <input type="tel" id="signupPhone" name="phone" class="form-control"
+                        placeholder="Enter your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" class="form-control"
+                        placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="confirm_password" class="form-control"
+                        placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="form-submit">Signup</button>
+                <div class="form-switch">
+                    Already have an account? <a href="#" id="switchToLogin">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+   
+
+    <!-- Debugging -->
+    <div style="display: none;">
+        Debug: Current Category = {{ current_category }}, Medicines Count = {{ medicines|length }}
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+</html>

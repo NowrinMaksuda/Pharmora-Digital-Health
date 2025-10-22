@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Services - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/services.css') }}" />
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo"
+                        style="height: 50px; width: auto; margin-right: 15px" />
+                    <span>MediHome</span>
+                </div>
+                <nav>
+                    <ul class="nav-links" id="navLinks">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                        <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                        {% if user %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li>
+                            <a href="{{ url_for('services') }}" class="active">Services</a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">{{ cart_count if cart_count else 0 }}</span>
+                        </a>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    {% if user %}
+                    <div class="user-dropdown">
+                        <img src="{{ user.image or 'https://picsum.photos/seed/user123/40/40.jpg' }}" alt="User Profile"
+                            class="user-profile" id="userProfile" />
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{{ url_for('dashboard') }}">Profile</a>
+                            <a href="{{ url_for('logout') }}">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="user-dropdown">
+                        <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User Profile" class="user-profile"
+                            id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="" id="loginBtn">Login</a>
+                            <a href="#" id="signupBtn">Signup</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Services Page Content -->
+    <main class="services-page">
+        <div class="container">
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %} {% if
+            messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% endif %} {% endwith %}
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="floating-cross">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <h1 class="hero-title">Our Healthcare Services</h1>
+                <p class="hero-subtitle">
+                    Comprehensive healthcare solutions designed to meet all your medical
+                    needs with convenience and quality care.
+                </p>
+            </section>
+
+            <!-- Main Services Grid -->
+            <section class="main-services">
+                <h2 class="section-title">Core Services</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3 class="service-title">Online Consultation</h3>
+                        <p class="service-description">
+                            Connect with licensed doctors through video calls for medical
+                            advice, prescriptions, and follow-up consultations from the
+                            comfort of your home.
+                        </p>
+                        <button class="service-button" id="consultationBtn">
+                            Learn More
+                        </button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h3 class="service-title">Home Delivery</h3>
+                        <p class="service-description">
+                            Fast and reliable medicine delivery service that brings your
+                            prescribed medications right to your doorstep within 24 hours.
+                        </p>
+                        <button class="service-button" id="deliveryBtn">
+                            Learn More
+                        </button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-file-prescription"></i>
+                        </div>
+                        <h3 class="service-title">Prescription Upload</h3>
+                        <p class="service-description">
+                            Easily upload your prescriptions through our secure platform and
+                            get your medicines delivered without visiting a pharmacy.
+                        </p>
+                        <button class="service-button" id="prescriptionBtn">
+                            Learn More
+                        </button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <h3 class="service-title">Health Checkup</h3>
+                        <p class="service-description">
+                            Comprehensive health screening packages designed for early
+                            detection and prevention of diseases with detailed reports.
+                        </p>
+                        <button class="service-button" id="checkupBtn">Learn More</button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <h3 class="service-title">Medicine Reminder</h3>
+                        <p class="service-description">
+                            Smart medication management system that sends timely reminders
+                            to ensure you never miss your doses.
+                        </p>
+                        <button class="service-button" id="reminderBtn">
+                            Learn More
+                        </button>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">
+                            <i class="fas fa-ambulance"></i>
+                        </div>
+                        <h3 class="service-title">Emergency Support</h3>
+                        <p class="service-description">
+                            24/7 urgent medical assistance with quick response times and
+                            connections to nearby healthcare facilities.
+                        </p>
+                        <button class="service-button" id="emergencyBtn">
+                            Learn More
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Specialized Services -->
+            <section class="specialized-services">
+                <h2 class="section-title">Specialized Services</h2>
+                <div class="specialized-grid">
+                    <div class="specialized-card">
+                        <div class="specialized-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <h3 class="specialized-title">Chronic Care Management</h3>
+                        <p class="specialized-description">
+                            Long-term health condition support with personalized care plans
+                            and regular monitoring.
+                        </p>
+                        <button class="specialized-button">Get Started</button>
+                    </div>
+                    <div class="specialized-card">
+                        <div class="specialized-icon">
+                            <i class="fas fa-syringe"></i>
+                        </div>
+                        <h3 class="specialized-title">Vaccination Services</h3>
+                        <p class="specialized-description">
+                            Home vaccination programs for all ages with certified healthcare
+                            professionals.
+                        </p>
+                        <button class="specialized-button">Get Started</button>
+                    </div>
+                    <div class="specialized-card">
+                        <div class="specialized-icon">
+                            <i class="fas fa-vial"></i>
+                        </div>
+                        <h3 class="specialized-title">Lab Tests at Home</h3>
+                        <p class="specialized-description">
+                            Sample collection and testing services conducted in the comfort
+                            of your home.
+                        </p>
+                        <button class="specialized-button">Get Started</button>
+                    </div>
+                    <div class="specialized-card">
+                        <div class="specialized-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3 class="specialized-title">Elderly Care</h3>
+                        <p class="specialized-description">
+                            Specialized senior healthcare services focused on the unique
+                            needs of elderly patients.
+                        </p>
+                        <button class="specialized-button">Get Started</button>
+                    </div>
+                    <div class="specialized-card">
+                        <div class="specialized-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3 class="specialized-title">Mental Health Support</h3>
+                        <p class="specialized-description">
+                            Confidential counseling and therapy services with licensed
+                            mental health professionals.
+                        </p>
+                        <button class="specialized-button">Get Started</button>
+                    </div>
+                    <div class="specialized-card">
+                        <div class="specialized-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3 class="specialized-title">Corporate Wellness</h3>
+                        <p class="specialized-description">
+                            Comprehensive employee health programs designed for corporate
+                            clients.
+                        </p>
+                        <button class="specialized-button">Get Started</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Service Process Steps -->
+            <section class="process-section">
+                <h2 class="section-title">How Our Services Work</h2>
+                <div class="process-container">
+                    <div class="process-steps">
+                        <div class="process-step">
+                            <div class="step-number">1</div>
+                            <h3 class="step-title">Choose Service</h3>
+                            <p class="step-description">
+                                Select the healthcare service you need from our comprehensive
+                                list.
+                            </p>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">2</div>
+                            <h3 class="step-title">Provide Details</h3>
+                            <p class="step-description">
+                                Share your medical information and requirements securely.
+                            </p>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">3</div>
+                            <h3 class="step-title">Get Matched</h3>
+                            <p class="step-description">
+                                We connect you with the right healthcare professional.
+                            </p>
+                        </div>
+                        <div class="process-step">
+                            <div class="step-number">4</div>
+                            <h3 class="step-title">Receive Care</h3>
+                            <p class="step-description">
+                                Get the healthcare service you need at your convenience.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Plans -->
+            <section class="pricing-section">
+                <h2 class="section-title">Pricing Plans</h2>
+                <div class="pricing-container">
+                    <div class="pricing-card">
+                        <h3 class="plan-name">Basic Plan</h3>
+                        <div class="plan-price">৳999</div>
+                        <div class="plan-period">per month</div>
+                        <div class="plan-features">
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Online Consultation (2/month)</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Medicine Delivery</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Prescription Upload</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Basic Health Checkup</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Medicine Reminder</span>
+                            </div>
+                        </div>
+                        <button class="plan-button">Choose Plan</button>
+                    </div>
+                    <div class="pricing-card featured">
+                        <h3 class="plan-name">Premium Plan</h3>
+                        <div class="plan-price">৳1,999</div>
+                        <div class="plan-period">per month</div>
+                        <div class="plan-features">
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Online Consultation (5/month)</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Free Medicine Delivery</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Prescription Upload</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Comprehensive Health Checkup</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Medicine Reminder</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Emergency Support</span>
+                            </div>
+                        </div>
+                        <button class="plan-button">Choose Plan</button>
+                    </div>
+                    <div class="pricing-card">
+                        <h3 class="plan-name">Family Plan</h3>
+                        <div class="plan-price">৳3,999</div>
+                        <div class="plan-period">per month</div>
+                        <div class="plan-features">
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Online Consultation (10/month)</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Free Medicine Delivery</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Prescription Upload</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Comprehensive Health Checkup</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Medicine Reminder</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Emergency Support</span>
+                            </div>
+                            <div class="plan-feature">
+                                <i class="fas fa-check"></i>
+                                <span>Up to 4 Family Members</span>
+                            </div>
+                        </div>
+                        <button class="plan-button">Choose Plan</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why Choose Our Services -->
+            <section class="why-choose-section">
+                <h2 class="section-title">Why Choose Our Services</h2>
+                <div class="why-choose-grid">
+                    <div class="why-choose-card">
+                        <div class="why-choose-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h3 class="why-choose-title">Qualified Professionals</h3>
+                        <p class="why-choose-description">
+                            Our team consists of licensed and experienced healthcare
+                            professionals dedicated to providing quality care.
+                        </p>
+                    </div>
+                    <div class="why-choose-card">
+                        <div class="why-choose-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 class="why-choose-title">24/7 Availability</h3>
+                        <p class="why-choose-description">
+                            Access healthcare services anytime, anywhere with our
+                            round-the-clock availability.
+                        </p>
+                    </div>
+                    <div class="why-choose-card">
+                        <div class="why-choose-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="why-choose-title">Secure & Confidential</h3>
+                        <p class="why-choose-description">
+                            Your health information is kept secure and confidential with our
+                            advanced security measures.
+                        </p>
+                    </div>
+                    <div class="why-choose-card">
+                        <div class="why-choose-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3 class="why-choose-title">Easy to Use</h3>
+                        <p class="why-choose-description">
+                            Our user-friendly platform makes accessing healthcare services
+                            simple and convenient.
+                        </p>
+                    </div>
+                    <div class="why-choose-card">
+                        <div class="why-choose-icon">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <h3 class="why-choose-title">Quality Assured</h3>
+                        <p class="why-choose-description">
+                            We maintain high standards of quality in all our healthcare
+                            services and products.
+                        </p>
+                    </div>
+                    <div class="why-choose-card">
+                        <div class="why-choose-icon">
+                            <i class="fas fa-hand-holding-heart"></i>
+                        </div>
+                        <h3 class="why-choose-title">Personalized Care</h3>
+                        <p class="why-choose-description">
+                            Receive healthcare services tailored to your specific needs and
+                            preferences.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Call-to-Action Section -->
+            <section class="cta-section">
+                <div class="container">
+                    <h2 class="cta-title">Ready to Get Started?</h2>
+                    <p class="cta-subtitle">
+                        Join thousands of satisfied customers who have experienced the
+                        convenience of our healthcare services.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="{{ url_for('medicines') }}" class="cta-button">Browse Services</a>
+                        {% if user %}
+                        <a href="{{ url_for('dashboard') }}" class="cta-button secondary">My Dashboard</a>
+                        {% else %}
+                        <a href="{{ url_for('login') }}" class="cta-button secondary">Login</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>
+                        Your trusted online pharmacy in Bangladesh, providing genuine
+                        medicines and healthcare products at your doorstep.
+                    </p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>
+                        Subscribe to our newsletter for the latest updates and exclusive
+                        offers.
+                    </p>
+                    <form class="newsletter-form" action="{{ url_for('subscribe') }}" method="post">
+                        <input type="email" class="newsletter-input" placeholder="Your email address" name="email"
+                            required />
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('medicine_delivery') }}">Medicine Delivery</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('health_consultation') }}">Health Consultation</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('prescription_upload') }}">Prescription Upload</a>
+                        </li>
+                        <li><a href="{{ url_for('lab_tests') }}">Lab Tests</a></li>
+                        <li>
+                            <a href="{{ url_for('healthcare_products') }}">Healthcare Products</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li>
+                            <a href="{{ url_for('shipping_policy') }}">Shipping Policy</a>
+                        </li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>
+                    &copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam
+                    | Dhaka, Bangladesh
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/services.js') }}"></script>
+</body>
+
+</html>

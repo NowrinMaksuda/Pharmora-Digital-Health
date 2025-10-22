@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin-dashboard.css') }}">
+    <style>
+        /* Additional styles for image previews and notifications */
+        .image-preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .image-preview img {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        .notification-dropdown.active {
+            display: block;
+        }
+        .notification-item {
+            display: flex;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        .notification-icon {
+            margin-right: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgb(5, 5, 5);
+        }
+        .notification-icon.user {
+            background-color: #4299e1;
+        }
+        .notification-icon.order {
+            background-color: #ed8936;
+        }
+        .notification-content {
+            flex: 1;
+        }
+        .notification-content h4 {
+            margin: 0 0 4px;
+            font-size: 14px;
+        }
+        .notification-content p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+            margin-left: 8px;
+        }
+        .view-all {
+            display: block;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            color: #3182ce;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .view-all:hover {
+            background: #e9ecef;
+        }
+        .view-image {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<!-- At the top of the template, add this default settings block -->
+{% set default_settings = {
+    'site_name': 'MediHome',
+    'site_email': 'info@medihome.com',
+    'site_phone': '+880 1234 567890',
+    'site_address': '123 Healthcare Avenue, Dhaka 1205, Bangladesh',
+    'bkash_enabled': '1',
+    'nagad_enabled': '1',
+    'rocket_enabled': '1',
+    'cod_enabled': '1'
+} %}
+{% set settings = settings or default_settings %}
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>MediHome</span>
+                </div>
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="{{ url_for('admin_dashboard') }}" class="menu-item {% if active_section == 'dashboard' or not active_section %}active{% endif %}" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('manage_users') }}" class="menu-item {% if active_section == 'users' %}active{% endif %}" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>Manage Users</span>
+                </a>
+                <a href="{{ url_for('manage_medicines') }}" class="menu-item {% if active_section == 'medicines' %}active{% endif %}" data-section="medicines">
+                    <i class="fas fa-pills"></i>
+                    <span>Manage Medicines</span>
+                </a>
+                <a href="{{ url_for('manage_orders') }}" class="menu-item {% if active_section == 'orders' %}active{% endif %}" data-section="orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Manage Orders</span>
+                </a>
+                <a href="{{ url_for('reports') }}" class="menu-item {% if active_section == 'reports' %}active{% endif %}" data-section="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="{{ url_for('settings') }}" class="menu-item {% if active_section == 'settings' %}active{% endif %}" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="top-bar-actions">
+                    <div class="notification-icon" id="notificationIcon">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <h3>Recent Activity</h3>
+                            <div class="notification-list">
+                                {% if recent_activity is defined %}
+                                    {% for activity in recent_activity %}
+                                    <div class="notification-item">
+                                        <div class="notification-icon {{ activity.type }}">
+                                            <i class="fas fa-{% if activity.type == 'user' %}user{% else %}shopping-cart{% endif %}"></i>
+                                        </div>
+                                        <div class="notification-content">
+                                            <h4>
+                                                {% if activity.type == 'user' %}
+                                                New User Registration
+                                                {% else %}
+                                                New Order Received
+                                                {% endif %}
+                                            </h4>
+                                            <p>
+                                                {% if activity.type == 'user' %}
+                                                {{ activity.name }} has registered a new account
+                                                {% else %}
+                                                Order from {{ activity.name }} has been placed
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="notification-time">
+                                            {{ activity.time.strftime('%H:%M') }}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="notification-item">
+                                        <div class="notification-content">
+                                            <p>No recent activity</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <a href="{{ url_for('admin_dashboard') }}" class="view-all">View All</a>
+                        </div>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="admin-profile" id="adminProfile">
+                        <img src="{{ session.get('admin_image', 'https://picsum.photos/seed/admin123/40/40.jpg') }}" alt="Admin Profile" class="user-profile">
+                        <div class="admin-dropdown" id="adminDropdown">
+                            <a href="#" id="profileBtn">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                            <a href="{{ url_for('admin_logout') }}" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Section -->
+            <section class="dashboard-section {% if active_section == 'dashboard' or not active_section %}active{% endif %}" id="dashboard">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon sales">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalSales">৳{{ "%.2f"|format(total_sales|float) if total_sales is defined else "0.00" }}</h3>
+                            <p>Total Sales</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon users">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalUsers">{{ total_users if total_users is defined else "0" }}</h3>
+                            <p>Total Users</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orders">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalOrders">{{ total_orders if total_orders is defined else "0" }}</h3>
+                            <p>Total Orders</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon medicines">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalMedicines">{{ total_medicines if total_medicines is defined else "0" }}</h3>
+                            <p>Total Medicines</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Sales Overview</h3>
+                        <div class="chart-container">
+                            <canvas id="salesChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Order Status</h3>
+                        <div class="chart-container">
+                            <canvas id="orderStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Orders -->
+                <div class="new-orders-card">
+                    <h3>
+                        New Orders
+                        <button class="refresh-btn" id="refreshOrders">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </h3>
+                    <div class="orders-list" id="newOrdersList">
+                        {% if new_orders is defined %}
+                            {% for order in new_orders %}
+                            <div class="order-item">
+                                <img src="https://picsum.photos/seed/{{ order.ordered_by }}/50/50.jpg" alt="Customer" class="order-avatar">
+                                <div class="order-info">
+                                    <h4>Order #{{ order.id }}</h4>
+                                    <p>Customer: {{ order.ordered_by }}</p>
+                                    <p>Items: {{ order.quantity }} | Total: ৳{{ "%.2f"|format(order.price|float) }}</p>
+                                </div>
+                                <div class="order-status status-{{ order.status|lower }}">{{ order.status }}</div>
+                                <div class="order-actions">
+                                    <form action="{{ url_for('update_order_status', order_id=order.id) }}" method="post" class="inline-form">
+                                        <input type="hidden" name="status" value="Processing">
+                                        <button type="submit" class="action-btn accept" title="Accept">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('update_order_status', order_id=order.id) }}" method="post" class="inline-form">
+                                        <input type="hidden" name="status" value="Cancelled">
+                                        <button type="submit" class="action-btn reject" title="Reject">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{{ url_for('view_order', order_id=order.id) }}" class="action-btn view" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No new orders available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Users Management Section -->
+            <section class="dashboard-section {% if active_section == 'users' %}active{% endif %}" id="users">
+                <div class="data-card">
+                    <h3>
+                        Manage Users
+                        <button class="add-btn" id="addUserBtn">
+                            <i class="fas fa-plus"></i> Add User
+                        </button>
+                    </h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Registration Date</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                {% if users is defined and users %}
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>
+                                            <div class="user-info">
+                                                <img src="{{ user.image or 'https://picsum.photos/seed/user' + user.id|string + '/40/40.jpg' }}" alt="User" class="user-avatar">
+                                                <div class="user-details">
+                                                    <h4>{{ user.name }}</h4>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.phone }}</td>
+                                        <td>{{ user.address }}</td>
+                                        <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                                        <td>{{ user.role }}</td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <a href="{{ url_for('view_user', user_id=user.id) }}" class="table-action-btn view" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button class="table-action-btn edit" title="Edit" data-id="{{ user.id }}" data-type="user">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form action="{{ url_for('delete_user', user_id=user.id) }}" method="post" class="inline-form">
+                                                    <button type="submit" class="table-action-btn delete" title="Delete" onclick="return confirm('Are you sure you want to delete this user?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" style="text-align: center;">No users found</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if current_page is defined and total_pages is defined %}
+                    <div class="pagination">
+                        <button {% if current_page == 1 %}disabled{% endif %}>
+                            <a href="{{ url_for('manage_users', page=current_page-1) if current_page > 1 else '#' }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </button>
+                        {% for page in range(1, total_pages+1) %}
+                        <button {% if page == current_page %}class="active"{% endif %}>
+                            <a href="{{ url_for('manage_users', page=page) }}">{{ page }}</a>
+                        </button>
+                        {% endfor %}
+                        <button {% if current_page == total_pages %}disabled{% endif %}>
+                            <a href="{{ url_for('manage_users', page=current_page+1) if current_page < total_pages else '#' }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            
+            <!-- Medicines Management Section -->
+            <section class="dashboard-section {% if active_section == 'medicines' %}active{% endif %}" id="medicines">
+                <div class="data-card">
+                    <h3>
+                        Manage Medicines
+                        <button class="add-btn" id="addMedicineBtn">
+                            <i class="fas fa-plus"></i> Add Medicine
+                        </button>
+                    </h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Sold</th>
+                                    <th>Rating</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicinesTableBody">
+                                {% if medicines is defined and medicines %}
+                                    {% for medicine in medicines %}
+                                    <tr>
+                                        <td>
+                                            <div class="medicine-info">
+                                                <img src="{{ medicine.image or 'https://picsum.photos/seed/medicine' + medicine.id|string + '/40/40.jpg' }}" alt="Medicine" class="medicine-image">
+                                                <div class="medicine-details">
+                                                    <h4>{{ medicine.name }}</h4>
+                                                    <p>{{ medicine.category }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>৳{{ "%.2f"|format(medicine.price|float) }}</td>
+                                        <td>
+                                            <span class="stock-badge {% if medicine.stock_quantity < 10 %}stock-low{% elif medicine.stock_quantity < 30 %}stock-medium{% else %}stock-high{% endif %}">
+                                                {{ medicine.stock_quantity }}
+                                            </span>
+                                        </td>
+                                        <td>{{ medicine.sold_quantity }}</td>
+                                        <td>{{ medicine.ratings }}</td>
+                                        <td>{{ medicine.category }}</td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <a href="{{ url_for('view_medicine', medicine_id=medicine.id) }}" class="table-action-btn view" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button class="table-action-btn edit" title="Edit" data-id="{{ medicine.id }}" data-type="medicine">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form action="{{ url_for('delete_medicine', medicine_id=medicine.id) }}" method="post" class="inline-form">
+                                                    <button type="submit" class="table-action-btn delete" title="Delete" onclick="return confirm('Are you sure you want to delete this medicine?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" style="text-align: center;">No medicines found</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if current_page is defined and total_pages is defined %}
+                    <div class="pagination">
+                        <button {% if current_page == 1 %}disabled{% endif %}>
+                            <a href="{{ url_for('manage_medicines', page=current_page-1) if current_page > 1 else '#' }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </button>
+                        {% for page in range(1, total_pages+1) %}
+                        <button {% if page == current_page %}class="active"{% endif %}>
+                            <a href="{{ url_for('manage_medicines', page=page) }}">{{ page }}</a>
+                        </button>
+                        {% endfor %}
+                        <button {% if current_page == total_pages %}disabled{% endif %}>
+                            <a href="{{ url_for('manage_medicines', page=current_page+1) if current_page < total_pages else '#' }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            
+            <!-- Orders Management Section -->
+            <section class="dashboard-section {% if active_section == 'orders' %}active{% endif %}" id="orders">
+                <div class="data-card">
+                    <h3>
+                        Manage Orders
+                        <button class="add-btn" id="addOrderBtn">
+                            <i class="fas fa-plus"></i> Add Order
+                        </button>
+                    </h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Payment Method</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                {% if orders is defined and orders %}
+                                    {% for order in orders %}
+                                    <tr>
+                                        <td>#{{ order.id }}</td>
+                                        <td>{{ order.ordered_by }}</td>
+                                        <td>{{ order.product }}</td>
+                                        <td>{{ order.quantity }}</td>
+                                        <td>৳{{ "%.2f"|format(order.price|float) }}</td>
+                                        <td>{{ order.payment_method }}</td>
+                                        <td>
+                                            <span class="order-status status-{{ order.status|lower }}">{{ order.status }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <a href="{{ url_for('view_order', order_id=order.id) }}" class="table-action-btn view" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <button class="table-action-btn edit" title="Edit" data-id="{{ order.id }}" data-type="order">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <form action="{{ url_for('delete_order', order_id=order.id) }}" method="post" class="inline-form">
+                                                    <button type="submit" class="table-action-btn delete" title="Delete" onclick="return confirm('Are you sure you want to delete this order?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="8" style="text-align: center;">No orders found</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if current_page is defined and total_pages is defined %}
+                    <div class="pagination">
+                        <button {% if current_page == 1 %}disabled{% endif %}>
+                            <a href="{{ url_for('manage_orders', page=current_page-1) if current_page > 1 else '#' }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </button>
+                        {% for page in range(1, total_pages+1) %}
+                        <button {% if page == current_page %}class="active"{% endif %}>
+                            <a href="{{ url_for('manage_orders', page=page) }}">{{ page }}</a>
+                        </button>
+                        {% endfor %}
+                        <button {% if current_page == total_pages %}disabled{% endif %}>
+                            <a href="{{ url_for('manage_orders', page=current_page+1) if current_page < total_pages else '#' }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            
+            <!-- Reports Section -->
+            <section class="dashboard-section {% if active_section == 'reports' %}active{% endif %}" id="reports">
+                {% if sales_data is defined and top_medicines is defined and user_growth is defined %}
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>User Growth</h3>
+                            <div class="chart-container">
+                                <canvas id="userGrowthChart" data-user-growth-data="{{ user_growth_array | tojson }}"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Top Selling Medicines</h3>
+                            <div class="chart-container">
+                                <canvas id="topSellingChart" 
+                                      data-medicine-names="{{ medicine_names | tojson }}" 
+                                      data-medicine-sales="{{ medicine_sales | tojson }}">
+                                </canvas>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>Report data not available. Please go to the Reports section to generate reports.</p>
+                {% endif %}
+                
+                <div class="data-card">
+                    <h3>Export Reports</h3>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <a href="{{ url_for('export_report', report_type='sales') }}" class="btn btn-primary">
+                            <i class="fas fa-file-excel"></i> Export Sales Report
+                        </a>
+                        <a href="{{ url_for('export_report', report_type='users') }}" class="btn btn-primary">
+                            <i class="fas fa-file-excel"></i> Export Users Report
+                        </a>
+                        <a href="{{ url_for('export_report', report_type='medicines') }}" class="btn btn-primary">
+                            <i class="fas fa-file-excel"></i> Export Medicines Report
+                        </a>
+                        <a href="{{ url_for('export_report', report_type='orders') }}" class="btn btn-primary">
+                            <i class="fas fa-file-excel"></i> Export Orders Report
+                        </a>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Settings Section -->
+            <section class="dashboard-section {% if active_section == 'settings' %}active{% endif %}" id="settings">
+                {% if settings is defined %}
+                    <div class="data-card">
+                        <h3>General Settings</h3>
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <div class="form-group">
+                                <label for="siteName">Site Name</label>
+                                <input type="text" id="siteName" name="siteName" class="form-control" value="{{ settings.get('site_name', default_settings.site_name) }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="siteEmail">Site Email</label>
+                                <input type="email" id="siteEmail" name="siteEmail" class="form-control" value="{{ settings.get('site_email', default_settings.site_email) }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="sitePhone">Site Phone</label>
+                                <input type="text" id="sitePhone" name="sitePhone" class="form-control" value="{{ settings.get('site_phone', default_settings.site_phone) }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="siteAddress">Site Address</label>
+                                <textarea id="siteAddress" name="siteAddress" class="form-control" rows="3">{{ settings.get('site_address', default_settings.site_address) }}</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                    
+                    <div class="data-card">
+                        <h3>Payment Settings</h3>
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="bkash" value="bkash" {% if settings.get('bkash_enabled', default_settings.bkash_enabled) == '1' %}checked{% endif %}> Enable bKash
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="nagad" value="nagad" {% if settings.get('nagad_enabled', default_settings.nagad_enabled) == '1' %}checked{% endif %}> Enable Nagad
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="rocket" value="rocket" {% if settings.get('rocket_enabled', default_settings.rocket_enabled) == '1' %}checked{% endif %}> Enable Rocket
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="cod" value="cod" {% if settings.get('cod_enabled', default_settings.cod_enabled) == '1' %}checked{% endif %}> Enable Cash on Delivery
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <p>Settings not available.</p>
+                {% endif %}
+            </section>
+        </main>
+    </div>
+    
+    <!-- Admin Profile Modal -->
+    <div class="modal" id="adminProfileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Admin Profile</h3>
+                <button class="modal-close" id="adminProfileModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-header">
+                    <img src="{{ session.get('admin_image', 'https://picsum.photos/seed/admin123/80/80.jpg') }}" alt="Admin Profile" class="profile-avatar" id="adminProfileAvatar">
+                    <div class="profile-info">
+                        <h3 id="adminProfileName">{{ session.get('user_name', 'Admin User') }}</h3>
+                        <p>Administrator</p>
+                    </div>
+                </div>
+                <form id="adminProfileForm" action="{{ url_for('update_admin_profile') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="adminProfileImage">Profile Image</label>
+                        <input type="file" id="adminProfileImage" name="adminProfileImage" class="form-control" accept="image/*">
+                        <div class="image-preview">
+                            <img src="{{ session.get('admin_image', 'https://picsum.photos/seed/admin123/100/100.jpg') }}" alt="Preview" id="adminProfileImagePreview">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminName">Full Name</label>
+                        <input type="text" id="adminName" name="adminName" class="form-control" value="{{ session.get('user_name', 'Admin User') }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminEmail">Email</label>
+                        <input type="email" id="adminEmail" name="adminEmail" class="form-control" value="admin@medihome.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPhone">Phone</label>
+                        <input type="text" id="adminPhone" name="adminPhone" class="form-control" value="+880 1234 567890" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminBio">Bio</label>
+                        <textarea id="adminBio" name="adminBio" class="form-control" rows="3">Experienced administrator with expertise in healthcare management systems.</textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="adminProfileModalCancel">Cancel</button>
+                <button type="submit" form="adminProfileForm" class="btn btn-primary" id="saveAdminProfileBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Modal -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="userModalTitle">Add User</h3>
+                <button class="modal-close" id="userModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm" action="{{ url_for('add_user') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="userImage">Profile Image</label>
+                        <input type="file" id="userImage" name="userImage" class="form-control" accept="image/*">
+                        <div class="image-preview">
+                            <img src="https://picsum.photos/seed/defaultuser/100/100.jpg" alt="Preview" id="userImagePreview">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userName">Name</label>
+                            <input type="text" id="userName" name="userName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">Email</label>
+                            <input type="email" id="userEmail" name="userEmail" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userPhone">Phone</label>
+                            <input type="text" id="userPhone" name="userPhone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userPassword">Password</label>
+                            <input type="password" id="userPassword" name="userPassword" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="userAddress">Address</label>
+                        <textarea id="userAddress" name="userAddress" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="userRole">Role</label>
+                        <select id="userRole" name="userRole" class="form-control">
+                            <option value="customer">Customer</option>
+                            <option value="admin">Admin</option>
+                            <option value="premium customer">Premium Customer</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="userModalCancel">Cancel</button>
+                <button type="submit" form="userForm" class="btn btn-primary" id="saveUserBtn">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Medicine Modal -->
+    <div class="modal" id="medicineModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="medicineModalTitle">Add Medicine</h3>
+                <button class="modal-close" id="medicineModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="medicineForm" action="{{ url_for('add_medicine') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="medicineImage">Medicine Image</label>
+                        <input type="file" id="medicineImage" name="medicineImage" class="form-control" accept="image/*">
+                        <div class="image-preview">
+                            <img src="https://picsum.photos/seed/defaultmedicine/100/100.jpg" alt="Preview" id="medicineImagePreview">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="medicineName">Name</label>
+                            <input type="text" id="medicineName" name="medicineName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medicinePrice">Price</label>
+                            <input type="number" id="medicinePrice" name="medicinePrice" class="form-control" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="medicineStock">Stock Quantity</label>
+                            <input type="number" id="medicineStock" name="medicineStock" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="medicineRating">Rating</label>
+                            <input type="number" id="medicineRating" name="medicineRating" class="form-control" step="0.1" min="0" max="5" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="medicineCategory">Category</label>
+                        <select id="medicineCategory" name="medicineCategory" class="form-control">
+                            <option value="General">General</option>
+                            <option value="Pain Relief">Pain Relief</option>
+                            <option value="Vitamins">Vitamins</option>
+                            <option value="Cough & Cold">Cough & Cold</option>
+                            <option value="Diabetes Care">Diabetes Care</option>
+                            <option value="Baby Care">Baby Care</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="medicineDetails">Details</label>
+                        <textarea id="medicineDetails" name="medicineDetails" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="medicineModalCancel">Cancel</button>
+                <button type="submit" form="medicineForm" class="btn btn-primary" id="saveMedicineBtn">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Modal -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="orderModalTitle">Add Order</h3>
+                <button class="modal-close" id="orderModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="orderForm" action="{{ url_for('add_order') }}" method="post">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="orderCustomer">Customer Name</label>
+                            <input type="text" id="orderCustomer" name="orderCustomer" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderEmail">Email</label>
+                            <input type="email" id="orderEmail" name="orderEmail" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="orderPhone">Phone</label>
+                            <input type="text" id="orderPhone" name="orderPhone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderProduct">Product</label>
+                            <input type="text" id="orderProduct" name="orderProduct" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="orderQuantity">Quantity</label>
+                            <input type="number" id="orderQuantity" name="orderQuantity" class="form-control" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderPrice">Price</label>
+                            <input type="number" id="orderPrice" name="orderPrice" class="form-control" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="orderPayment">Payment Method</label>
+                            <select id="orderPayment" name="orderPayment" class="form-control" required>
+                                <option value="">Select Payment Method</option>
+                                <option value="bKash">bKash</option>
+                                <option value="Nagad">Nagad</option>
+                                <option value="Rocket">Rocket</option>
+                                <option value="Cash on Delivery">Cash on Delivery</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="orderStatus">Status</label>
+                            <select id="orderStatus" name="orderStatus" class="form-control" required>
+                                <option value="Pending">Pending</option>
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderAddress">Address</label>
+                        <textarea id="orderAddress" name="orderAddress" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderInstructions">Special Instructions</label>
+                        <textarea id="orderInstructions" name="orderInstructions" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="orderModalCancel">Cancel</button>
+                <button type="submit" form="orderForm" class="btn btn-primary" id="saveOrderBtn">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User View Modal -->
+    <div class="modal" id="userViewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>User Details</h3>
+                <button class="modal-close" id="userViewModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                {% if user is defined %}
+                <div class="view-details">
+                    <h4>Personal Information</h4>
+                    <div class="view-row">
+                        <div class="view-label">Image:</div>
+                        <div class="view-value">
+                            <img src="{{ user.image or 'https://picsum.photos/seed/user' + user.id|string + '/100/100.jpg' }}" alt="User Image" class="view-image">
+                        </div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Name:</div>
+                        <div class="view-value" id="viewUserName">{{ user.name }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Email:</div>
+                        <div class="view-value" id="viewUserEmail">{{ user.email }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Phone:</div>
+                        <div class="view-value" id="viewUserPhone">{{ user.phone }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Address:</div>
+                        <div class="view-value" id="viewUserAddress">{{ user.address }}</div>
+                    </div>
+                </div>
+                <div class="view-details">
+                    <h4>Account Information</h4>
+                    <div class="view-row">
+                        <div class="view-label">User ID:</div>
+                        <div class="view-value" id="viewUserId">{{ user.id }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Registration Date:</div>
+                        <div class="view-value" id="viewUserRegDate">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Status:</div>
+                        <div class="view-value" id="viewUserStatus">Active</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Role:</div>
+                        <div class="view-value" id="viewUserRole">{{ user.role }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <p>No user data available.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="userViewModalClose">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Medicine View Modal -->
+    <div class="modal" id="medicineViewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Medicine Details</h3>
+                <button class="modal-close" id="medicineViewModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                {% if medicine is defined %}
+                <div class="view-details">
+                    <h4>Medicine Information</h4>
+                    <div class="view-row">
+                        <div class="view-label">Image:</div>
+                        <div class="view-value">
+                            <img src="{{ medicine.image or 'https://picsum.photos/seed/medicine' + medicine.id|string + '/100/100.jpg' }}" alt="Medicine Image" class="view-image">
+                        </div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Name:</div>
+                        <div class="view-value" id="viewMedicineName">{{ medicine.name }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Price:</div>
+                        <div class="view-value" id="viewMedicinePrice">৳{{ "%.2f"|format(medicine.price|float) }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Stock:</div>
+                        <div class="view-value" id="viewMedicineStock">{{ medicine.stock_quantity }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Sold:</div>
+                        <div class="view-value" id="viewMedicineSold">{{ medicine.sold_quantity }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Rating:</div>
+                        <div class="view-value" id="viewMedicineRating">{{ medicine.ratings }}</div>
+                    </div>
+                </div>
+                <div class="view-details">
+                    <h4>Additional Information</h4>
+                    <div class="view-row">
+                        <div class="view-label">Medicine ID:</div>
+                        <div class="view-value" id="viewMedicineId">{{ medicine.id }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Category:</div>
+                        <div class="view-value" id="viewMedicineCategory">{{ medicine.category }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Details:</div>
+                        <div class="view-value" id="viewMedicineDetails">{{ medicine.details }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <p>No medicine data available.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="medicineViewModalClose">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order View Modal -->
+    <div class="modal" id="orderViewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Order Details</h3>
+                <button class="modal-close" id="orderViewModalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                {% if order is defined %}
+                <div class="view-details">
+                    <h4>Order Information</h4>
+                    <div class="view-row">
+                        <div class="view-label">Order ID:</div>
+                        <div class="view-value" id="viewOrderId">#{{ order.id }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Customer:</div>
+                        <div class="view-value" id="viewOrderCustomer">{{ order.ordered_by }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Email:</div>
+                        <div class="view-value" id="viewOrderEmail">{{ order.email }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Phone:</div>
+                        <div class="view-value" id="viewOrderPhone">{{ order.phone }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Product:</div>
+                        <div class="view-value" id="viewOrderProduct">{{ order.product }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Quantity:</div>
+                        <div class="view-value" id="viewOrderQuantity">{{ order.quantity }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Price:</div>
+                        <div class="view-value" id="viewOrderPrice">৳{{ "%.2f"|format(order.price|float) }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Total:</div>
+                        <div class="view-value" id="viewOrderTotal">৳{{ "%.2f"|format(order.price|float) }}</div>
+                    </div>
+                </div>
+                <div class="view-details">
+                    <h4>Additional Information</h4>
+                    <div class="view-row">
+                        <div class="view-label">Payment Method:</div>
+                        <div class="view-value" id="viewOrderPayment">{{ order.payment_method }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Status:</div>
+                        <div class="view-value" id="viewOrderStatus">{{ order.status }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Address:</div>
+                        <div class="view-value" id="viewOrderAddress">{{ order.address }}</div>
+                    </div>
+                    <div class="view-row">
+                        <div class="view-label">Special Instructions:</div>
+                        <div class="view-value" id="viewOrderInstructions">{{ order.special_instruction or 'None' }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <p>No order data available.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="orderViewModalClose">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <script src="{{ url_for('static', filename='js/admin-dashboard.js') }}"></script>
+    
+</body>
+</html>

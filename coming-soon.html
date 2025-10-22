@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming Soon - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/coming-soon.css') }}">
+</head>
+<body>
+    <div class="coming-soon-container">
+        <div class="coming-soon-content">
+            <i class="fas fa-tools coming-soon-icon"></i>
+            <h1>Coming Soon</h1>
+            <p>{{ page_name.replace('_', ' ').title() }} feature is under development.</p>
+            <p>We're working hard to bring you this feature. Please check back later!</p>
+            <a href="{{ url_for('services') }}" class="back-btn">Back to Services</a>
+        </div>
+    </div>
+</body>
+</html>

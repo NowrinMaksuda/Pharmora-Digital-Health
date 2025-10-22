@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cart.css') }}">
+</head>
+
+<body>
+    <!-- Header -->
+<header>
+    <div class="container">
+        <div class="header-container">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                <span>MediHome</span>
+            </div>
+            <nav>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                    <li><a href="{{ url_for('about') }}">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('services') }}">Services</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <div class="cart-icon">
+                    <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">{{ cart_items|length }}</span>
+                    </a>
+                </div>
+                <div class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <div class="user-dropdown">
+                    <img src="{{ user.image or 'https://picsum.photos/seed/user123/40/40.jpg' }}" alt="User Profile"
+                        class="user-profile" id="userProfile">
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="{{ url_for('dashboard') }}">Profile</a>
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Cart Page Content -->
+    <main class="cart-page">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Shopping Cart</h1>
+                <p class="page-subtitle">Review your selected items and proceed to checkout</p>
+            </div>
+
+            {% if cart_items %}
+            <div class="cart-container">
+                <!-- Cart Items Section -->
+                <div class="cart-items">
+                    <div class="cart-header">
+                        <h2 class="cart-title">Your Items</h2>
+                        <form action="{{ url_for('update_cart') }}" method="post">
+                            <input type="hidden" name="action" value="clear">
+                            <button type="submit" class="clear-cart">Clear Cart</button>
+                        </form>
+                    </div>
+
+                    {% for item in cart_items %}
+                    <div class="cart-item" data-id="{{ item.cart_id }}">
+                        <div class="cart-item-image">
+                            {% if item.image %}
+                            <img src="{{ item.image }}" alt="{{ item.name }}">
+                            {% else %}
+                            <i class="fas fa-tablets"></i>
+                            {% endif %}
+                        </div>
+                        <div class="cart-item-details">
+                            <h3 class="cart-item-name">{{ item.name }}</h3>
+                            <div class="cart-item-rating">
+                                <div class="rating-stars">
+                                    {% for i in range(1, 6) %}
+                                    {% if i <= item.ratings %} <i class="fas fa-star"></i>
+                                        {% elif i - 0.5 <= item.ratings %} <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                            <i class="far fa-star"></i>
+                                            {% endif %}
+                                            {% endfor %}
+                                </div>
+                                <div class="rating-value">{{ item.ratings }} ({{ item.sold_quantity }} sold)</div>
+                            </div>
+                            <div class="cart-item-price">৳{{ item.price }}</div>
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <form action="{{ url_for('update_cart') }}" method="post" style="display: inline;">
+                                        <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
+                                        <input type="hidden" name="action" value="decrease">
+                                        <button type="submit" class="quantity-btn decrease-qty">-</button>
+                                    </form>
+                                    <input type="text" class="quantity-input" value="{{ item.quantity }}" readonly>
+                                    <form action="{{ url_for('update_cart') }}" method="post" style="display: inline;">
+                                        <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
+                                        <input type="hidden" name="action" value="increase">
+                                        <button type="submit" class="quantity-btn increase-qty">+</button>
+                                    </form>
+                                </div>
+                                <div class="cart-item-buttons">
+                                    <button class="save-later">Save for Later</button>
+                                    <form action="{{ url_for('update_cart') }}" method="post" style="display: inline;">
+                                        <input type="hidden" name="cart_id" value="{{ item.cart_id }}">
+                                        <input type="hidden" name="action" value="remove">
+                                        <button type="submit" class="remove-item">Remove</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                     <a href="{{ url_for('checkout') }}" class="checkout-button">Proceed to Checkout</a>
+                </div>
+                       
+            {% else %}
+            <div class="empty-cart">
+                <div class="empty-cart-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h2>Your cart is empty</h2>
+                <p>Looks like you haven't added any items to your cart yet.</p>
+                <a href="{{ url_for('medicines') }}" class="btn">Shop Now</a>
+            </div>
+            {% endif %}
+
+            <!-- Recommendations Section -->
+            {% if recommendations %}
+            <div class="recommendations">
+                <h2 class="section-title">You might also like</h2>
+                <div class="recommendation-grid">
+                    {% for item in recommendations %}
+                    <div class="recommendation-card">
+                        <div class="recommendation-image">
+                            {% if item.image %}
+                            <img src="{{ item.image }}" alt="{{ item.name }}">
+                            {% else %}
+                            <i class="fas fa-pills"></i>
+                            {% endif %}
+                        </div>
+                        <div class="recommendation-info">
+                            <h3 class="recommendation-name">{{ item.name }}</h3>
+                            <div class="recommendation-rating">
+                                <div class="rating-stars">
+                                    {% for i in range(1, 6) %}
+                                    {% if i <= item.ratings %} <i class="fas fa-star"></i>
+                                        {% elif i - 0.5 <= item.ratings %} <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                            <i class="far fa-star"></i>
+                                            {% endif %}
+                                            {% endfor %}
+                                </div>
+                                <div class="rating-value">{{ item.ratings }}</div>
+                            </div>
+                            <div class="recommendation-price">৳{{ item.price }}</div>
+                            <form action="{{ url_for('add_to_cart_from_recommendations') }}" method="post">
+                                <input type="hidden" name="medicine_id" value="{{ item.id }}">
+                                <button type="submit" class="add-to-cart-btn">Add to Cart</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recently Viewed Section -->
+            {% if recently_viewed %}
+            <div class="recently-viewed">
+                <h2 class="section-title">Recently Viewed</h2>
+                <div class="recently-grid">
+                    {% for item in recently_viewed %}
+                    <div class="recently-card">
+                        <div class="recently-image">
+                            {% if item.image %}
+                            <img src="{{ item.image }}" alt="{{ item.name }}">
+                            {% else %}
+                            <i class="fas fa-pills"></i>
+                            {% endif %}
+                        </div>
+                        <div class="recently-info">
+                            <h3 class="recently-name">{{ item.name }}</h3>
+                            <div class="recently-price">৳{{ item.price }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="Your email address">
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Medicine Delivery</a></li>
+                        <li><a href="#">Health Consultation</a></li>
+                        <li><a href="#">Prescription Upload</a></li>
+                        <li><a href="#">Lab Tests</a></li>
+                        <li><a href="#">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="modal-close" id="loginModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Login to MediHome</h2>
+            <form action="{{ url_for('login') }}" method="post">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" class="form-control" placeholder="Enter your email"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" class="form-control"
+                        placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="form-submit">Login</button>
+                <div class="form-switch">
+                    Don't have an account? <a href="#" id="switchToSignup">Signup</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <span class="modal-close" id="signupModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Create an Account</h2>
+            <form action="{{ url_for('signup') }}" method="post">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="name" class="form-control"
+                        placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="email" class="form-control"
+                        placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone</label>
+                    <input type="tel" id="signupPhone" name="phone" class="form-control"
+                        placeholder="Enter your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" class="form-control"
+                        placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="confirm_password" class="form-control"
+                        placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="form-submit">Signup</button>
+                <div class="form-switch">
+                    Already have an account? <a href="#" id="switchToLogin">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+</body>
+
+</html>

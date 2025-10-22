@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/invoice.css') }}">
+</head>
+
+<body>
+    <div class="invoice-container">
+        <div class="watermark">MEDIHOME</div>
+
+        <div class="invoice-content">
+            <!-- Header Section -->
+            <div class="invoice-header">
+                <div class="logo-section">
+                    <div class="logo">
+                       <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" class="logo-img"
+                        style="height: 50px; width: auto; margin-right: 10px;">
+                    </div>
+                    <div class="company-info">
+                        <h1>MediHome</h1>
+                        <p>Your Trusted Online Pharmacy</p>
+                    </div>
+                </div>
+
+                <div class="invoice-details">
+                    <div class="invoice-title">INVOICE</div>
+                    <div class="invoice-meta">
+                        <div class="invoice-meta-item">
+                            <span class="invoice-meta-label">Invoice #:</span>
+                            <span class="invoice-meta-value">#MH-2024-{{ orders[0].id }}</span>
+                        </div>
+                        <div class="invoice-meta-item">
+                            <span class="invoice-meta-label">Date:</span>
+                            <span class="invoice-meta-value">{{ orders[0].created_at.strftime('%B %d, %Y') }}</span>
+                        </div>
+                        <div class="invoice-meta-item">
+                            <span class="invoice-meta-label">Time:</span>
+                            <span class="invoice-meta-value">{{ orders[0].created_at.strftime('%I:%M %p') }}</span>
+                        </div>
+                    </div>
+                    <div class="status-badge status-paid">
+                        <i class="fas fa-check-circle"></i> Paid & Confirmed
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Details -->
+            <div class="company-details">
+                <h3><i class="fas fa-building"></i> Company Information</h3>
+                <div class="company-details-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <strong>Address:</strong> Northern University Dhaka
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <strong>Phone:</strong> +8801410485621
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <strong>Email:</strong> medihome10082025@gmail.com
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-certificate"></i>
+                        <div>
+                            <strong>License:</strong> {{ company_info.license }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer and Order Details -->
+            <div class="customer-details">
+                <div class="customer-info">
+                    <h3><i class="fas fa-user"></i> Ordered By</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Name:</span>
+                            <span class="info-value">{{ orders[0].ordered_by }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Phone:</span>
+                            <span class="info-value">{{ orders[0].phone }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value">{{ orders[0].email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Address:</span>
+                            <span class="info-value">{{ orders[0].address }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-info">
+                    <h3><i class="fas fa-receipt"></i> Order Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Order ID:</span>
+                            <span class="info-value">ORD-{{ orders[0].id }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Payment:</span>
+                            <span class="info-value">{{ orders[0].payment_method }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Transaction:</span>
+                            <span class="info-value">TRX{{ orders[0].id }}{{ orders[0].created_at.strftime('%m%d')
+                                }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status:</span>
+                            <span class="info-value">{{ orders[0].status }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update the pricing summary section -->
+            <div class="pricing-summary">
+                <h3><i class="fas fa-calculator"></i> Pricing Summary</h3>
+                <div class="pricing-grid">
+                    <div class="pricing-item">
+                        <span>Subtotal:</span>
+                        <span>৳{{ "%.2f"|format(subtotal|float) }}</span>
+                    </div>
+                    <div class="pricing-item">
+                        <span>Delivery:</span>
+                        <span>৳0</span>
+                    </div>
+                    <div class="pricing-item">
+                        <span>Discount:</span>
+                        <span>৳0</span>
+                    </div>
+                    <div class="pricing-item">
+                        <span>VAT (5%):</span>
+                        <span>৳{{ "%.2f"|format(tax_amount|float) }}</span>
+                    </div>
+                    <div class="pricing-item total">
+                        <span>Total:</span>
+                        <span>৳{{ "%.2f"|format(total_amount|float) }}</span>
+                    </div>
+                </div>
+                <div class="amount-in-words">
+                    <strong>Amount in Words:</strong> {{ total_amount|number_to_words }}
+                </div>
+            </div>
+
+            <!-- Update the product table -->
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                <div class="product-icon">
+                                    <i class="fas fa-tablets"></i>
+                                </div>
+                                <div class="product-details">
+                                    <h4>{{ order.product }}</h4>
+                                    <div class="product-sku">MED-{{ order.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>MED-{{ order.id }}</td>
+                        <td><span class="quantity-badge">{{ order.quantity }}</span></td>
+                        <td class="price">৳{{ "%.2f"|format(order.unit_price|float) }}</td>
+                        <td class="price">৳{{ "%.2f"|format(order.price|float) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Special Notes -->
+            <div class="special-notes">
+                <h3><i class="fas fa-sticky-note"></i> Special Instructions</h3>
+                <div class="notes-content">
+                    {{ orders[0].special_instruction or "No special instructions provided." }}
+                </div>
+            </div>
+
+            <!-- QR Code Section -->
+            <div class="qr-section">
+                <div class="qr-code">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <div class="qr-info">
+                    <h3>Track Your Order</h3>
+                    <p>Scan this QR code to track your order status</p>
+                    <p><strong>Order ID:</strong> ORD-{{ orders[0].id }}</p>
+                    <p><strong>Estimated Delivery:</strong> {{ estimated_delivery.strftime('%B %d, %Y') }}</p>
+                </div>
+            </div>
+            <!-- Terms and Conditions -->
+            <div class="terms-section">
+                <h3><i class="fas fa-file-contract"></i> Terms & Conditions</h3>
+                <div class="terms-content">
+                    <ol>
+                        <li>All medicines are genuine and sourced from authorized distributors.</li>
+                        <li>Once delivered, medicines cannot be returned or exchanged.</li>
+                        <li>Please check the expiry date before consuming any medicine.</li>
+                        <li>Keep medicines out of reach of children.</li>
+                        <li>Consult your doctor before taking any medicine.</li>
+                        <li>MediHome is not responsible for any adverse effects from medicines.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Security Badges -->
+            <div class="security-badges">
+                <div class="badge">
+                    <i class="fas fa-certificate"></i>
+                    <span>Licensed Pharmacy</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>Fast Delivery</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure Payment</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="printBtn">
+                    <i class="fas fa-print"></i> Print Invoice
+                </button>
+                <button class="btn btn-secondary" id="downloadBtn">
+                    <i class="fas fa-download"></i> Download PDF
+                </button>
+                <button class="btn btn-outline" id="emailBtn">
+                    <i class="fas fa-envelope"></i> Email Invoice
+                </button>
+                <a href="{{ url_for('order_confirmation', order_ids=order_ids) }}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <script src="{{ url_for('static', filename='js/invoice.js') }}"></script>
+</body>
+
+</html>

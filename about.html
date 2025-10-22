@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+</head>
+<body>
+    <!-- Header -->
+<header>
+    <div class="container">
+        <div class="header-container">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                <span>MediHome</span>
+            </div>
+            <nav>
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                    <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+                    <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                    <li><a href="{{ url_for('services') }}">Services</a></li>
+                </ul>
+            </nav>
+            <div class="header-actions">
+                <div class="cart-icon">
+                    <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count">{{ cart_count }}</span>
+                    </a>
+                </div>
+                <div class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </div>
+                {% if user %}
+                <div class="user-dropdown">
+                    <img src="{{ user.image or 'https://picsum.photos/seed/user123/40/40.jpg' }}" alt="User Profile" class="user-profile" id="userProfile">
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="{{ url_for('dashboard') }}">Profile</a>
+                        <a href="{{ url_for('logout') }}">Logout</a>
+                    </div>
+                </div>
+               {% else %}
+                    <div class="user-dropdown">
+                        <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User Profile" class="user-profile"
+                            id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="" id="loginBtn">Login</a>
+                            <a href="#" id="signupBtn">Signup</a>
+                        </div>
+                    </div>
+                    {% endif %}
+            </div>
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </div>
+</header>
+    
+
+    <!-- About Page Content -->
+    <main class="about-page">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="floating-heart">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h1 class="hero-title">About MediHome</h1>
+                <p class="hero-subtitle">Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products at your doorstep.</p>
+            </section>
+            
+            <!-- Creator Section -->
+            <section class="creator-section">
+                <h2 class="section-title">Meet the Creator</h2>
+                <div class="creator-card">
+                    <div class="creator-content">
+                        <div class="creator-image">
+                            <img src="{{ url_for('static', filename='images/admin.jpg') }}" alt="Naimul Islam" class="creator-photo">
+                        </div>
+                        <div class="creator-info">
+                            <h3 class="creator-name">Naimul Islam</h3>
+                            <p class="creator-title">Full Stack Developer & Healthcare Enthusiast</p>
+                            <div class="creator-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-university detail-icon"></i>
+                                    <span class="detail-text">Northern University Bangladesh</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-graduation-cap detail-icon"></i>
+                                    <span class="detail-text">Computer Science & Engineering</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar-alt detail-icon"></i>
+                                    <span class="detail-text">Batch: 2023-2027</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-map-marker-alt detail-icon"></i>
+                                    <span class="detail-text">Dhaka, Bangladesh</span>
+                                </div>
+                            </div>
+                            <div class="social-links">
+                                <a href="https://facebook.com/naimul.islam.1086" target="_blank" class="social-link facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="https://github.com/naimul1086" target="_blank" class="social-link github">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/in/naimul1086/" target="_blank" class="social-link linkedin">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="https://twitter.com" target="_blank" class="social-link twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <a href="https://instagram.com/naimul.islam.1" target="_blank" class="social-link instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                                <a href="mailto:naimul1086nub@gmail.com" class="social-link email">
+                                    <i class="fas fa-envelope"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Mission & Vision Section -->
+            <section class="mission-vision-section">
+                <h2 class="section-title">Mission & Vision</h2>
+                <div class="mission-vision-cards">
+                    <div class="mission-card">
+                        <div class="card-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3 class="card-title">Our Mission</h3>
+                        <p class="card-description">To provide accessible, affordable, and high-quality healthcare products to every household in Bangladesh through our innovative online platform.</p>
+                    </div>
+                    <div class="vision-card">
+                        <div class="card-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h3 class="card-title">Our Vision</h3>
+                        <p class="card-description">To become the most trusted and reliable online pharmacy in Bangladesh, revolutionizing the way people access healthcare products.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Key Features Section -->
+            <section class="features-section">
+                <h2 class="section-title">Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">100% Genuine</h3>
+                        <p class="feature-description">All our products are sourced directly from manufacturers and authorized distributors.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <h3 class="feature-title">Fast Delivery</h3>
+                        <p class="feature-description">Get your medicines delivered to your doorstep within 24 hours.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h3 class="feature-title">Expert Advice</h3>
+                        <p class="feature-description">Our team of pharmacists are available to provide you with expert advice.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <h3 class="feature-title">Best Prices</h3>
+                        <p class="feature-description">We offer competitive prices and regular discounts on all our products.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <h3 class="feature-title">Secure Payment</h3>
+                        <p class="feature-description">Your payment information is secure with our encrypted payment gateway.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-undo"></i>
+                        </div>
+                        <h3 class="feature-title">Easy Returns</h3>
+                        <p class="feature-description">Not satisfied with your purchase? Return it within 7 days for a full refund.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Statistics Section -->
+            <section class="stats-section">
+                <div class="container">
+                    <h2 class="section-title" style="color: var(--white);">Our Impact</h2>
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <div class="stat-number">10,000+</div>
+                            <div class="stat-label">Happy Customers</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">5,000+</div>
+                            <div class="stat-label">Products Available</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Daily Orders</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Cities Covered</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Technology Stack Section -->
+            <section class="tech-section">
+                <h2 class="section-title">Technology Stack</h2>
+                <div class="tech-grid">
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-html5"></i>
+                        </div>
+                        <div class="tech-name">HTML5</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-css3-alt"></i>
+                        </div>
+                        <div class="tech-name">CSS3</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-js-square"></i>
+                        </div>
+                        <div class="tech-name">JavaScript</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <div class="tech-name">Python</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-flask"></i>
+                        </div>
+                        <div class="tech-name">Flask</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="tech-name">MySQL</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-git-alt"></i>
+                        </div>
+                        <div class="tech-name">Git</div>
+                    </div>
+                    <div class="tech-card">
+                        <div class="tech-icon">
+                            <i class="fab fa-aws"></i>
+                        </div>
+                        <div class="tech-name">AWS</div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Contact CTA Section -->
+            <section class="contact-cta">
+                <div class="container">
+                    <h2 class="cta-title">Get in Touch</h2>
+                    <p class="cta-subtitle">Have questions or feedback? We'd love to hear from you!</p>
+                    <a href="{{ url_for('contact') }}" class="cta-button">Contact Us</a>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form" action="{{ url_for('subscribe') }}" method="post">
+                        <input type="email" class="newsletter-input" placeholder="Your email address" name="email" required>
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicine_delivery') }}">Medicine Delivery</a></li>
+                        <li><a href="{{ url_for('health_consultation') }}">Health Consultation</a></li>
+                        <li><a href="{{ url_for('prescription_upload') }}">Prescription Upload</a></li>
+                        <li><a href="{{ url_for('lab_tests') }}">Lab Tests</a></li>
+                        <li><a href="{{ url_for('healthcare_products') }}">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    
+    <script src="{{ url_for('static', filename='js/about.js') }}"></script>
+     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+</html>

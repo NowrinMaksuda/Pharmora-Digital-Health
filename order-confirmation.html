@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/order-confirmation.css') }}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                    <span>MediHome</span>
+                </div>
+                <nav>
+                    <ul class="nav-links" id="navLinks">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                        <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span>
+                        </a>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+
+                </div>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Order Confirmation Page Content -->
+    <main class="order-confirmation-page">
+        <div class="container">
+            <div class="confirmation-container">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h1 class="confirmation-title">Order Placed Successfully!</h1>
+                <p class="confirmation-message">Thank you for your order. Your order has been placed successfully and
+                    will be processed shortly.</p>
+
+                <div class="order-details">
+                    <h3>Order Details</h3>
+                    {% for order in orders %}
+                    <div class="detail-row">
+                        <span class="detail-label">Order ID:</span>
+                        <span class="detail-value">ORD-{{ order.id }}</span>
+                    </div>
+                    {% endfor %}
+                    <div class="detail-row">
+                        <span class="detail-label">Order Date:</span>
+                        <span class="detail-value">{{ orders[0].created_at.strftime('%B %d, %Y') }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Amount:</span>
+                        <span class="detail-value">৳{{ "%.2f"|format(total_amount|float) }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Method:</span>
+                        <span class="detail-value">{{ orders[0].payment_method }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Estimated Delivery:</span>
+                        <span class="detail-value">2-3 business days</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Delivery Address:</span>
+                        <span class="detail-value">{{ orders[0].address }}</span>
+                    </div>
+                </div>
+
+                <div class="order-items">
+                    <h3>Ordered Items</h3>
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>{{ order.product }}</td>
+                                <td>{{ order.quantity }}</td>
+                                <td>৳{{ "%.2f"|format(order.unit_price|float) }}</td>
+                                <td>৳{{ "%.2f"|format(order.price|float) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="{{ url_for('invoice', order_ids=order_ids) }}" class="btn btn-primary"
+                        id="downloadInvoiceBtn">
+                        <i class="fas fa-download"></i> Download Invoice
+                    </a>
+                    <a href="{{ url_for('medicines') }}" class="btn btn-secondary">
+                        <i class="fas fa-shopping-bag"></i> Back to Shop
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="Your email address">
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="{{ url_for('contact') }}">Medicine Delivery</a></li>
+                        <li><a href="{{ url_for('health_consultation') }}">Health Consultation</a></li>
+                        <li><a href="{{ url_for('prescription_upload') }}">Prescription Upload</a></li>
+                        <li><a href="{{ url_for('lab_tests') }}">Lab Tests</a></li>
+                        <li><a href="{{ url_for('healthcare_products') }}">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/order-confirmation.js') }}"></script>
+</body>
+
+</html>

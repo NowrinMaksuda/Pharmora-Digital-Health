@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Prescription - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/upload-prescription.css') }}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                    <span>MediHome</span>
+                </div>
+                <nav>
+                    <ul class="nav-links" id="navLinks">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                        <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                        <li><a href="{{ url_for('upload_prescription') }}" class="active">Upload Prescription</a></li>
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">{{ session.get('cart_count', 0) }}</span>
+                        </a>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    {% if 'user_id' in session %}
+                    <div class="user-dropdown">
+                        <img src="{{ session.user_image or 'https://picsum.photos/seed/user123/40/40.jpg' }}"
+                            alt="User Profile" class="user-profile" id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{{ url_for('dashboard') }}">Profile</a>
+                            <a href="{{ url_for('logout') }}">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="user-dropdown">
+                        <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User Profile" class="user-profile"
+                            id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="#" id="loginBtn">Login</a>
+                            <a href="#" id="signupBtn">Signup</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Upload Prescription Page Content -->
+    <main class="upload-prescription-page">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Upload Prescription</h1>
+                <p class="page-subtitle">Upload your prescription and we'll deliver the medicines to your doorstep</p>
+            </div>
+            <div class="upload-container">
+                <div class="upload-form">
+                    <h2 class="section-title">Prescription Details</h2>
+                    <form id="prescriptionForm" action="{{ url_for('handle_prescription_upload') }}" method="post"
+                        enctype="multipart/form-data">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="patientName" class="form-label">Patient Name</label>
+                                <input type="text" id="patientName" name="patientName" class="form-input"
+                                    placeholder="Enter patient name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientAge" class="form-label">Age</label>
+                                <input type="number" id="patientAge" name="patientAge" class="form-input"
+                                    placeholder="Enter age" required>
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="patientPhone" class="form-label">Phone Number</label>
+                                <input type="tel" id="patientPhone" name="patientPhone" class="form-input"
+                                    placeholder="Enter phone number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientEmail" class="form-label">Email Address</label>
+                                <input type="email" id="patientEmail" name="patientEmail" class="form-input"
+                                    placeholder="Enter email address">
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="patientAddress" class="form-label">Address</label>
+                            <input type="text" id="patientAddress" name="patientAddress" class="form-input"
+                                placeholder="Enter full address" required>
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Upload Prescription</label>
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <p>Drag and drop your prescription image here or</p>
+                                <button type="button" class="browse-btn" id="browseBtn">Browse Files</button>
+                                <input type="file" id="fileInput" name="fileInput" class="file-input" accept="image/*"
+                                    multiple required>
+                            </div>
+                            <div class="file-preview-container" id="filePreviewContainer"></div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="specialInstructions" class="form-label">Special Instructions (Optional)</label>
+                            <textarea id="specialInstructions" name="specialInstructions" class="form-textarea"
+                                placeholder="Any special instructions for the pharmacist"></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Submit Prescription</button>
+                    </form>
+                </div>
+                <div class="upload-info">
+                    <h2 class="section-title">How It Works</h2>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Upload Prescription</h3>
+                                <p>Take a photo of your prescription or upload an image file.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Our Pharmacist Reviews</h3>
+                                <p>Our licensed pharmacist will review your prescription.</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Get Medicines Delivered</h3>
+                                <p>We'll deliver your medicines right to your doorstep.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-box">
+                        <h3>Important Information</h3>
+                        <ul>
+                            <li>Only valid prescriptions from registered medical practitioners will be accepted.</li>
+                            <li>We reserve the right to verify the prescription with the prescribing doctor.</li>
+                            <li>Prescription medicines will only be dispensed upon verification.</li>
+                            <li>Delivery charges may apply based on your location.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form">
+                        <input type="email" class="newsletter-input" placeholder="Your email address">
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Medicine Delivery</a></li>
+                        <li><a href="#">Health Consultation</a></li>
+                        <li><a href="#">Prescription Upload</a></li>
+                        <li><a href="#">Lab Tests</a></li>
+                        <li><a href="#">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="#">Terms & Conditions</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Returns & Refunds</a></li>
+                        <li><a href="#">Track Order</a></li>
+                        <li><a href="#">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="modal-close" id="loginModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Login to MediHome</h2>
+            <form action="{{ url_for('login') }}" method="post">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="loginEmail" class="form-control"
+                        placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="loginPassword" class="form-control"
+                        placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="form-submit">Login</button>
+                <div class="form-switch">
+                    Don't have an account? <a href="#" id="switchToSignup">Signup</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <span class="modal-close" id="signupModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Create an Account</h2>
+            <form action="{{ url_for('signup') }}" method="post">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="signupName" class="form-control"
+                        placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="signupEmail" class="form-control"
+                        placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone</label>
+                    <input type="tel" id="signupPhone" name="signupPhone" class="form-control"
+                        placeholder="Enter your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="signupPassword" class="form-control"
+                        placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="signupConfirmPassword" class="form-control"
+                        placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="form-submit">Signup</button>
+                <div class="form-switch">
+                    Already have an account? <a href="#" id="switchToLogin">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    <script src="{{ url_for('static', filename='js/upload-prescription.js') }}"></script>
+</body>
+
+</html>

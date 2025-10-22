@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ medicine.name }} - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/view-details.css') }}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                    <span>MediHome</span>
+                </div>
+                <nav>
+                    <ul class="nav-links" id="navLinks">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                        <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                        {% if user %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">{{ cart_count if cart_count else 0 }}</span>
+                        </a>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                     {% if user %}
+                    <div class="user-dropdown">
+                        <img src="{{ user.image or 'https://picsum.photos/seed/user123/40/40.jpg' }}" alt="User Profile"
+                            class="user-profile" id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{{ url_for('dashboard') }}">Profile</a>
+                            <a href="{{ url_for('logout') }}">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="user-dropdown">
+                        <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User Profile" class="user-profile"
+                            id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{{ url_for('login') }}" id="loginBtn">Login</a>
+                            <a href="{{ url_for('signup') }}" id="signupBtn">Signup</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Medicine Details Page Content -->
+    <main class="medicine-details-page">
+        <div class="container">
+            <a href="{{ url_for('medicines') }}" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Medicines
+            </a>
+
+            <div class="medicine-container">
+                <div class="medicine-image-container">
+                    <img src="{{ medicine.image or 'https://picsum.photos/seed/' + medicine.name + '/500/500.jpg' }}"
+                        alt="{{ medicine.name }}" class="medicine-image">
+                </div>
+
+                <div class="medicine-info">
+                    <h1 class="medicine-name">{{ medicine.name }}</h1>
+                    <div class="medicine-price">৳{{ medicine.price }}</div>
+                    <div class="medicine-rating">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <div class="rating-text">4.5 (245 reviews)</div>
+                    </div>
+                    <div class="stock-info">
+                        {% if medicine.stock_quantity > 0 %}
+                        <span class="stock-badge in-stock">In Stock</span>
+                        {% if medicine.stock_quantity <= 10 %} <span>Only {{ medicine.stock_quantity }} left in stock -
+                            order soon</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="stock-badge out-of-stock">Out of Stock</span>
+                            {% endif %}
+                    </div>
+                    <div class="medicine-description">
+                        {{ medicine.description }}
+                        <ul class="medicine-details-list">
+                            <li><i class="fas fa-check-circle"></i> Effective pain relief</li>
+                            <li><i class="fas fa-check-circle"></i> Fast-acting formula</li>
+                            <li><i class="fas fa-check-circle"></i> Clinically tested</li>
+                            <li><i class="fas fa-check-circle"></i> Safe for regular use</li>
+                        </ul>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="addToCartBtn" data-id="{{ medicine.id }}" {% if
+                            medicine.stock_quantity==0 %}disabled{% endif %}>
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <form action="{{ url_for('buy_now') }}" method="post" style="display: inline;">
+                            <input type="hidden" name="medicine_id" value="{{ medicine.id }}">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-secondary" {% if medicine.stock_quantity==0
+                                %}disabled{% endif %}>
+                                <i class="fas fa-bolt"></i> Buy Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recommended Medicines -->
+            <div class="recommended-medicines">
+                <h2 class="section-title">You May Also Need</h2>
+                <div class="medicines-grid">
+                    {% for med in recommended_medicines %}
+                    <div class="medicine-card" data-medicine-id="{{ med.id }}">
+                        <div class="medicine-card-image">
+                            <img src="{{ med.image or 'https://picsum.photos/seed/' + med.name + '/250/180.jpg' }}"
+                                alt="{{ med.name }}">
+                        </div>
+                        <div class="medicine-card-content">
+                            <h3 class="medicine-card-title">{{ med.name }}</h3>
+                            <div class="medicine-card-price">৳{{ med.price }}</div>
+                            <div class="medicine-card-rating">
+                                <div class="stars">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star-half-alt"></i>
+                                </div>
+                                <div class="rating-text">4.5 (120 reviews)</div>
+                            </div>
+                            <a href="{{ url_for('medicine_details', medicine_id=med.id) }}"
+                                class="view-details-link">View Details</a>
+                            <button class="add-to-cart-btn" data-medicine-id="{{ med.id }}">Add to Cart</button>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p>No recommended medicines available at the moment.</p>
+                    {% endfor %}
+                </div>
+            </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" class="newsletter-input" placeholder="Your email address" required>
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicine_delivery') }}">Medicine Delivery</a></li>
+                        <li><a href="{{ url_for('health_consultation') }}">Health Consultation</a></li>
+                        <li><a href="{{ url_for('prescription_upload') }}">Prescription Upload</a></li>
+                        <li><a href="{{ url_for('lab_tests') }}">Lab Tests</a></li>
+                        <li><a href="{{ url_for('healthcare_products') }}">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="modal-close" id="loginModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Login to MediHome</h2>
+            <form action="{{ url_for('login') }}" method="post">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" name="email" class="form-control" placeholder="Enter your email"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" name="password" class="form-control"
+                        placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="form-submit">Login</button>
+                <div class="form-switch">
+                    Don't have an account? <a href="#" id="switchToSignup">Signup</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal" id="signupModal">
+        <div class="modal-content">
+            <span class="modal-close" id="signupModalClose">&times;</span>
+            <h2 style="margin-bottom: 20px; text-align: center; color: var(--primary-color);">Create an Account</h2>
+            <form action="{{ url_for('signup') }}" method="post">
+                <div class="form-group">
+                    <label for="signupName">Full Name</label>
+                    <input type="text" id="signupName" name="name" class="form-control"
+                        placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" name="email" class="form-control"
+                        placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone">Phone</label>
+                    <input type="text" id="signupPhone" name="phone" class="form-control"
+                        placeholder="Enter your phone number" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" name="password" class="form-control"
+                        placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword">Confirm Password</label>
+                    <input type="password" id="signupConfirmPassword" name="confirm_password" class="form-control"
+                        placeholder="Confirm your password" required>
+                </div>
+                <button type="submit" class="form-submit">Signup</button>
+                <div class="form-switch">
+                    Already have an account? <a href="#" id="switchToLogin">Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/view-details.js') }}"></script>
+</body>
+
+</html>

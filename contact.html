@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - MediHome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-container">
+                <div class="logo">
+               <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MediHome Logo" style="height: 50px; width: auto; margin-right: 15px;">
+                    <span>MediHome</span>
+                </div>
+                <nav>
+                    <ul class="nav-links" id="navLinks">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('medicines') }}">Medicine</a></li>
+                        <li><a href="{{ url_for('cart') }}">Cart</a></li>
+                        {% if user %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('about') }}">About</a></li>
+                        <li><a href="{{ url_for('contact') }}" class="active">Contact</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                    </ul>
+                </nav>
+                <div class="header-actions">
+                    <div class="cart-icon">
+                        <a href="{{ url_for('cart') }}" style="color: inherit; text-decoration: none;">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">{{ cart_count if cart_count else 0 }}</span>
+                        </a>
+                    </div>
+                    <div class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    {% if user %}
+                    <div class="user-dropdown">
+                        <img src="{{ user.image or 'https://picsum.photos/seed/user123/40/40.jpg' }}" alt="User Profile"
+                            class="user-profile" id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="{{ url_for('dashboard') }}">Profile</a>
+                            <a href="{{ url_for('logout') }}">Logout</a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="user-dropdown">
+                        <img src="https://picsum.photos/seed/user123/40/40.jpg" alt="User Profile" class="user-profile"
+                            id="userProfile">
+                        <div class="dropdown-menu" id="dropdownMenu">
+                            <a href="" id="loginBtn">Login</a>
+                            <a href="#" id="signupBtn">Signup</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contact Page Content -->
+    <main class="contact-page">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <div class="floating-phone">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <h1 class="hero-title">Contact Us</h1>
+                <p class="hero-subtitle">We're here to help you with any questions or concerns you may have.</p>
+            </section>
+
+            <!-- Contact Information Section -->
+            <section class="contact-info-section">
+                <h2 class="section-title">Get in Touch</h2>
+                <div class="contact-cards">
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h3 class="contact-title">Phone</h3>
+                        <p class="contact-details">+880 1234 567890</p>
+                        <p class="contact-details">+880 2345 678901</p>
+                        <p class="contact-highlight">Available 24/7</p>
+                        <a href="tel:+8801234567890" class="contact-button">Call Now</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3 class="contact-title">Email</h3>
+                        <p class="contact-details">support@medihome.com</p>
+                        <p class="contact-details">info@medihome.com</p>
+                        <p class="contact-highlight">Response within 24 hours</p>
+                        <a href="mailto:support@medihome.com" class="contact-button">Send Email</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h3 class="contact-title">Address</h3>
+                        <p class="contact-details">kawla,Dhaka</p>
+                        <p class="contact-details">Dhaka-1205, Bangladesh</p>
+                        <p class="contact-highlight">Visit our office</p>
+                        <a href="https://maps.app.goo.gl/fHy8iHuyhJaj2t2n6" target="_blank"
+                            class="contact-button">Get Directions</a>
+                    </div>
+                    <div class="contact-card">
+                        <div class="contact-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 class="contact-title">Live Chat</h3>
+                        <p class="contact-details">Chat with our support team</p>
+                        <p class="contact-details">Available 9AM-9PM</p>
+                        <p class="contact-highlight">Instant response</p>
+                        <button class="contact-button chat-button" id="liveChatBtn">Start Chat</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Form Section -->
+            <section class="contact-form-section">
+                <h2 class="section-title">Send us a Message</h2>
+                <div class="form-container">
+                    <form id="contactForm" method="POST" action="{{ url_for('contact') }}">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" id="name" name="name" class="form-input"
+                                    placeholder="Enter your full name" value="{{ user.name if user else '' }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" id="email" name="email" class="form-input"
+                                    placeholder="Enter your email address" value="{{ user.email if user else '' }}"
+                                    required>
+                            </div>
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" class="form-input"
+                                    placeholder="Enter your phone number" value="{{ user.phone if user else '' }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="subject" class="form-label">Subject</label>
+                                <select id="subject" name="subject" class="form-select" required>
+                                    <option value="">Select a subject</option>
+                                    <option value="general">General Inquiry</option>
+                                    <option value="order">Order Status</option>
+                                    <option value="product">Product Information</option>
+                                    <option value="complaint">Complaint</option>
+                                    <option value="feedback">Feedback</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="message" class="form-label">Message</label>
+                                <textarea id="message" name="message" class="form-textarea"
+                                    placeholder="Enter your message" required></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="newsletter" name="newsletter" class="checkbox-input">
+                                    <label for="newsletter" class="form-label">Subscribe to our newsletter for updates
+                                        and offers</label>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <button type="submit" class="form-submit">Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Office Information Section -->
+            <section class="office-section">
+                <h2 class="section-title">Visit Our Office</h2>
+                <div class="office-container">
+                    <div class="office-map">
+                        <img src="https://picsum.photos/seed/mapdhaka/600/400.jpg" alt="Office Location"
+                            class="map-placeholder">
+                    </div>
+                    <div class="office-details">
+                        <h3 class="office-title">MediHome Head Office</h3>
+                        <div class="office-info">
+                            <div class="office-info-item">
+                                <i class="fas fa-map-marker-alt office-info-icon"></i>
+                                <div class="office-info-text">
+                                    123, Road 5, Dhanmondi<br>
+                                    Dhaka-1205, Bangladesh
+                                </div>
+                            </div>
+                            <div class="office-info-item">
+                                <i class="fas fa-phone-alt office-info-icon"></i>
+                                <div class="office-info-text">
+                                    +880 1234 567890<br>
+                                    +880 2345 678901
+                                </div>
+                            </div>
+                            <div class="office-info-item">
+                                <i class="fas fa-envelope office-info-icon"></i>
+                                <div class="office-info-text">
+                                    support@medihome.com<br>
+                                    info@medihome.com
+                                </div>
+                            </div>
+                        </div>
+                        <div class="office-hours">
+                            <h4 class="hours-title">Office Hours</h4>
+                            <table class="hours-table">
+                                <tr>
+                                    <td>Monday - Friday</td>
+                                    <td>9:00 AM - 6:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Saturday</td>
+                                    <td>10:00 AM - 4:00 PM</td>
+                                </tr>
+                                <tr>
+                                    <td>Sunday</td>
+                                    <td>Closed</td>
+                                </tr>
+                                <tr>
+                                    <td>Emergency Support</td>
+                                    <td class="hours-highlight">24/7 Available</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ Section -->
+            <section class="faq-section">
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How do I upload a prescription?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                To upload a prescription, log in to your account and go to the Dashboard. Click on the
+                                "Upload Prescription" tab, then either drag and drop your prescription file or click
+                                "Choose File" to browse your device. Supported formats include JPG, PNG, and PDF. Our
+                                team will review your prescription and contact you within 24 hours.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>What are the delivery charges?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                Delivery charges vary based on your location and order value. For orders above ৳1000,
+                                delivery is free within Dhaka city. For orders below ৳1000, a standard delivery fee of
+                                ৳50 applies. Express delivery is available for an additional ৳100. Outside Dhaka,
+                                delivery charges start from ৳100 depending on the distance.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>How long does delivery take?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                Standard delivery within Dhaka city takes 24-48 hours. For express delivery, you can
+                                expect your order within 12-24 hours. Delivery to other cities in Bangladesh typically
+                                takes 2-3 business days. You can track your order status in real-time through your
+                                account dashboard.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>Do you accept insurance?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                Yes, we accept insurance from major providers in Bangladesh. During checkout, you can
+                                select "Insurance Payment" and provide your insurance details. We'll verify your
+                                coverage and process the payment accordingly. Please note that co-payments may apply
+                                depending on your insurance plan.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question">
+                            <span>What is your return policy?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <div class="faq-answer-content">
+                                We offer a 7-day return policy for most products. If you're not satisfied with your
+                                purchase, you can return it in its original condition for a full refund or exchange.
+                                Certain items like prescription medicines and personal care products may not be eligible
+                                for return due to health and safety regulations. Please contact our support team for
+                                assistance with returns.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Emergency Support Section -->
+            <section class="emergency-section">
+                <h2 class="emergency-title">Emergency Support</h2>
+                <p class="emergency-subtitle">For urgent medical needs, our emergency support team is available 24/7 to
+                    assist you.</p>
+                <div class="emergency-contact">
+                    <a href="tel:+8801234567890" class="emergency-button">
+                        <i class="fas fa-phone-alt emergency-icon"></i>
+                        Emergency Hotline
+                    </a>
+                    <button class="emergency-button" id="emergencyChatBtn">
+                        <i class="fas fa-comments emergency-icon"></i>
+                        Emergency Chat
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-column">
+                    <h3>About MediHome</h3>
+                    <p>Your trusted online pharmacy in Bangladesh, providing genuine medicines and healthcare products
+                        at your doorstep.</p>
+                    <div class="social-icons">
+                        <a href="#" class="social-icon facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-icon youtube"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-icon tiktok"><i class="fab fa-tiktok"></i></a>
+                        <a href="#" class="social-icon github"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-icon linkedin"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="social-icon instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Newsletter</h3>
+                    <p>Subscribe to our newsletter for the latest updates and exclusive offers.</p>
+                    <form class="newsletter-form" action="{{ url_for('subscribe') }}" method="post">
+                        <input type="email" class="newsletter-input" placeholder="Your email address" name="email"
+                            required>
+                        <button type="submit" class="newsletter-button">Subscribe</button>
+                    </form>
+                </div>
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicine_delivery') }}">Medicine Delivery</a></li>
+                        <li><a href="{{ url_for('health_consultation') }}">Health Consultation</a></li>
+                        <li><a href="{{ url_for('prescription_upload') }}">Prescription Upload</a></li>
+                        <li><a href="{{ url_for('lab_tests') }}">Lab Tests</a></li>
+                        <li><a href="{{ url_for('healthcare_products') }}">Healthcare Products</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('about') }}">About Us</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Categories</h3>
+                    <ul>
+                        <li><a href="{{ url_for('medicines', category='Pain Relief') }}">Pain Relief</a></li>
+                        <li><a href="{{ url_for('medicines', category='Vitamins') }}">Vitamins</a></li>
+                        <li><a href="{{ url_for('medicines', category='Cough & Cold') }}">Cough & Cold</a></li>
+                        <li><a href="{{ url_for('medicines', category='Diabetes Care') }}">Diabetes Care</a></li>
+                        <li><a href="{{ url_for('medicines', category='Baby Care') }}">Baby Care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul>
+                        <li><a href="{{ url_for('faq') }}">FAQ</a></li>
+                        <li><a href="{{ url_for('shipping_policy') }}">Shipping Policy</a></li>
+                        <li><a href="{{ url_for('returns') }}">Returns & Refunds</a></li>
+                        <li><a href="{{ url_for('track_order') }}">Track Order</a></li>
+                        <li><a href="{{ url_for('contact') }}">Contact Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2023 MediHome. All Rights Reserved. | Created by Naimul Islam | Dhaka, Bangladesh</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="{{ url_for('static', filename='js/contact.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</body>
+
+</html>
